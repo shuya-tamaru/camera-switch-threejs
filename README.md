@@ -1,6 +1,6 @@
-# Camera Switch Three.js
+# three-seamless-ortho-transition
 
-Seamless switching from perspective projection to orthographic projection using Dolly Zoom.
+A seamless transition from perspective projection to orthographic projection inspired by the principle of Dolly Zoom.
 
 ## Demo
 

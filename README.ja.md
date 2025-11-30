@@ -1,6 +1,6 @@
-# Camera Switch Three.js
+# three-seamless-ortho-transition
 
-Dolly Zoom を使った、透視投影から平行投影へのシームレスな切り替え。
+Dolly Zoom の原理を応用した、透視投影から平行投影へのシームレスな切り替え。
 
 ## デモ
 
