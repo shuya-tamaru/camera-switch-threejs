@@ -39,6 +39,11 @@ export class ModelLoader {
               }
             }
           });
+
+          const box = new THREE.Box3().setFromObject(gltf.scene);
+          const center = box.getCenter(new THREE.Vector3());
+          gltf.scene.position.sub(center);
+
           resolve(gltf);
         },
         (progress) => {

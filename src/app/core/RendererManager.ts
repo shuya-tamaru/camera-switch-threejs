@@ -15,7 +15,10 @@ export class RendererManager {
     this.renderer.setSize(width, height);
   }
 
-  async render(scene: THREE.Scene, camera: THREE.PerspectiveCamera) {
+  async render(
+    scene: THREE.Scene,
+    camera: THREE.PerspectiveCamera | THREE.OrthographicCamera
+  ) {
     await this.renderer.renderAsync(scene, camera);
   }
 }
