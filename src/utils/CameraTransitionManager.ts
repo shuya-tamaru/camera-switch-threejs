@@ -35,109 +35,132 @@ export class CameraTransitionManager {
     const polarAngle = orbitControls.getPolarAngle();
     const isPerspective = camera instanceof THREE.PerspectiveCamera;
 
-    //swtich to orthographic camera
-    if (polarAngle < this.SWITCH_ANGLE && isPerspective) {
-      const distance = camera.position.distanceTo(orbitControls.target);
-      const targetViewHeight = this.frustumHeightAtDistance(camera, distance);
-      const targetViewWidth = targetViewHeight * camera.aspect;
-      const halfHeight = targetViewHeight / 2;
-      const halfWidth = targetViewWidth / 2;
-
-      return {
-        shouldSwitch: true,
-        targetType: "orthographic",
-        overrideParams: {
-          top: halfHeight,
-          bottom: -halfHeight,
-          left: -halfWidth,
-          right: halfWidth,
-        },
-      };
-    } else if (polarAngle >= this.SWITCH_ANGLE && !isPerspective) {
-      //switch to perspective camera
-      const targetFov = this.MIN_FOV;
-      const targetFovHalfRad = THREE.MathUtils.degToRad(targetFov / 2);
-      const targetTan = Math.tan(targetFovHalfRad);
-      const orthoHeight = (camera.top - camera.bottom) / camera.zoom;
-      const newDist = orthoHeight / (2 * targetTan);
-
-      const position = camera.position.clone();
-      const target = orbitControls.target.clone();
-      const direction = new THREE.Vector3()
-        .subVectors(position, target)
-        .normalize();
-      const newPosition = target.add(direction.multiplyScalar(newDist));
-
-      return {
-        shouldSwitch: true,
-        targetType: "perspective",
-        overridePosition: newPosition,
-        overrideFov: targetFov,
-      };
+    // Camera type switching check (early return)
+    if (isPerspective && polarAngle < this.SWITCH_ANGLE) {
+      // Switch from perspective to orthographic
+      return this.switchToOrthographic(camera, orbitControls);
     }
 
-    //dolly zoom transition
-    if (polarAngle < this.TRANSITION_ANGLE && isPerspective) {
-      //transition between orthographic and perspective camera
+    if (!isPerspective && polarAngle >= this.SWITCH_ANGLE) {
+      // Switch from orthographic to perspective
+      return this.switchToPerspective(camera, orbitControls);
+    }
 
-      const t =
-        (polarAngle - this.SWITCH_ANGLE) /
-        (this.TRANSITION_ANGLE - this.SWITCH_ANGLE);
-
-      const clampedT = Math.max(0, Math.min(1, t));
-      const targetFov = THREE.MathUtils.lerp(
-        this.MIN_FOV,
-        this.DEFAULT_FOV,
-        clampedT
-      );
-
-      const targetFovHalfRad = THREE.MathUtils.degToRad(targetFov / 2);
-      const targetTan = Math.tan(targetFovHalfRad);
-
-      const currentFov = camera.fov;
-      const currentDist = camera.position.distanceTo(orbitControls.target);
-      const currentFovHalfRad = THREE.MathUtils.degToRad(currentFov / 2);
-      const currentTan = Math.tan(currentFovHalfRad);
-
-      //Division by zero prevention
-      if (targetTan > 0) {
-        const newDist = currentDist * (currentTan / targetTan);
-        const direction = new THREE.Vector3()
-          .subVectors(camera.position, orbitControls.target)
-          .normalize();
-        camera.position
-          .copy(orbitControls.target)
-          .add(direction.multiplyScalar(newDist));
-        camera.fov = targetFov;
-        camera.updateProjectionMatrix();
-      }
-    } else if (isPerspective) {
-      //normal zone
-      if (camera.fov !== this.DEFAULT_FOV) {
-        const currentFov = camera.fov;
-        const currentDist = camera.position.distanceTo(orbitControls.target);
-
-        const targetFov = this.DEFAULT_FOV;
-        const currentFovHalfRad = THREE.MathUtils.degToRad(currentFov / 2);
-        const currentTan = Math.tan(currentFovHalfRad);
-        const targetFovHalfRad = THREE.MathUtils.degToRad(targetFov / 2);
-        const targetTan = Math.tan(targetFovHalfRad);
-
-        const newDist = currentDist * (currentTan / targetTan);
-
-        const direction = new THREE.Vector3()
-          .subVectors(camera.position, orbitControls.target)
-          .normalize();
-
-        camera.position
-          .copy(orbitControls.target)
-          .add(direction.multiplyScalar(newDist));
-
-        camera.fov = targetFov;
-        camera.updateProjectionMatrix();
+    // Perspective camera transition processing
+    if (isPerspective) {
+      if (polarAngle < this.TRANSITION_ANGLE) {
+        // Transition zone: dolly zoom
+        this.applyDollyZoomTransition(camera, orbitControls, polarAngle);
+      } else if (camera.fov !== this.DEFAULT_FOV) {
+        // Normal zone: reset to default FOV
+        this.resetToDefaultFov(camera, orbitControls);
       }
     }
 
     return { shouldSwitch: false };
+  }
+
+  private static switchToOrthographic(
+    camera: THREE.PerspectiveCamera,
+    orbitControls: OrbitControls
+  ): FrustumUpdateResult {
+    const distance = camera.position.distanceTo(orbitControls.target);
+    const targetViewHeight = this.frustumHeightAtDistance(camera, distance);
+    const targetViewWidth = targetViewHeight * camera.aspect;
+
+    return {
+      shouldSwitch: true,
+      targetType: "orthographic",
+      overrideParams: {
+        top: targetViewHeight / 2,
+        bottom: -targetViewHeight / 2,
+        left: -targetViewWidth / 2,
+        right: targetViewWidth / 2,
+      },
+    };
+  }
+
+  private static switchToPerspective(
+    camera: THREE.OrthographicCamera,
+    orbitControls: OrbitControls
+  ): FrustumUpdateResult {
+    const targetFov = this.MIN_FOV;
+    const targetFovHalfRad = THREE.MathUtils.degToRad(targetFov / 2);
+    const targetTan = Math.tan(targetFovHalfRad);
+    const orthoHeight = (camera.top - camera.bottom) / camera.zoom;
+    const newDist = orthoHeight / (2 * targetTan);
+
+    const target = orbitControls.target.clone();
+    const direction = new THREE.Vector3()
+      .subVectors(camera.position, target)
+      .normalize();
+    const newPosition = target.add(direction.multiplyScalar(newDist));
+
+    return {
+      shouldSwitch: true,
+      targetType: "perspective",
+      overridePosition: newPosition,
+      overrideFov: targetFov,
+    };
+  }
+
+  private static applyDollyZoomTransition(
+    camera: THREE.PerspectiveCamera,
+    orbitControls: OrbitControls,
+    polarAngle: number
+  ): void {
+    const t =
+      (polarAngle - this.SWITCH_ANGLE) /
+      (this.TRANSITION_ANGLE - this.SWITCH_ANGLE);
+    const clampedT = Math.max(0, Math.min(1, t));
+    const targetFov = THREE.MathUtils.lerp(
+      this.MIN_FOV,
+      this.DEFAULT_FOV,
+      clampedT
+    );
+
+    const targetFovHalfRad = THREE.MathUtils.degToRad(targetFov / 2);
+    const targetTan = Math.tan(targetFovHalfRad);
+
+    if (targetTan <= 0) return; // Division by zero prevention
+
+    const currentFov = camera.fov;
+    const currentDist = camera.position.distanceTo(orbitControls.target);
+    const currentFovHalfRad = THREE.MathUtils.degToRad(currentFov / 2);
+    const currentTan = Math.tan(currentFovHalfRad);
+
+    const newDist = currentDist * (currentTan / targetTan);
+    const direction = new THREE.Vector3()
+      .subVectors(camera.position, orbitControls.target)
+      .normalize();
+
+    camera.position
+      .copy(orbitControls.target)
+      .add(direction.multiplyScalar(newDist));
+    camera.fov = targetFov;
+    camera.updateProjectionMatrix();
+  }
+
+  private static resetToDefaultFov(
+    camera: THREE.PerspectiveCamera,
+    orbitControls: OrbitControls
+  ): void {
+    const currentFov = camera.fov;
+    const currentDist = camera.position.distanceTo(orbitControls.target);
+    const currentFovHalfRad = THREE.MathUtils.degToRad(currentFov / 2);
+    const currentTan = Math.tan(currentFovHalfRad);
+    const targetFovHalfRad = THREE.MathUtils.degToRad(this.DEFAULT_FOV / 2);
+    const targetTan = Math.tan(targetFovHalfRad);
+
+    const newDist = currentDist * (currentTan / targetTan);
+    const direction = new THREE.Vector3()
+      .subVectors(camera.position, orbitControls.target)
+      .normalize();
+
+    camera.position
+      .copy(orbitControls.target)
+      .add(direction.multiplyScalar(newDist));
+    camera.fov = this.DEFAULT_FOV;
+    camera.updateProjectionMatrix();
   }
 }
