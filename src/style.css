@@ -1,7 +1,23 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   overflow: hidden;
-  margin: 0px;
   background-color: black;
+}
+
+#spinner-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  z-index: 9999;
 }
 
 #spinner {
@@ -11,12 +27,12 @@ body {
   width: 50px;
   height: 50px;
   margin: -25px 0 0 -25px;
-  border: 6px solid rgba(255, 255, 255, 0.3);
-  background: "#000";
-  border-top: 6px solid #fff;
+  border: 4px solid rgba(120, 120, 120, 0.3);
+  background: none;
+  border-top: 4px solid #000;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  display: none;
+  display: block;
   z-index: 9999;
 }
 
