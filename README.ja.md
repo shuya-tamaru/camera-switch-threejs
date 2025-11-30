@@ -4,9 +4,9 @@ Dolly Zoom の原理を応用した、透視投影から平行投影へのシー
 
 ## デモ
 
-[![デモ](./public/thumbnail.jpg)](https://shuya-tamaru.github.io/camera-switch-threejs/)
+[![デモ](./public/thumbnail.jpg)](https://shuya-tamaru.github.io/three-seamless-ortho-transition/)
 
-[デモリンク](https://shuya-tamaru.github.io/camera-switch-threejs/)
+[デモリンク](https://shuya-tamaru.github.io/three-seamless-ortho-transition/)
 
 ## 3D モデル
 

@@ -4,9 +4,9 @@ A seamless transition from perspective projection to orthographic projection ins
 
 ## Demo
 
-[![Demo](./public/thumbnail.jpg)](https://shuya-tamaru.github.io/camera-switch-threejs/)
+[![Demo](./public/thumbnail.jpg)](https://shuya-tamaru.github.io/three-seamless-ortho-transition/)
 
-[Demo Link](https://shuya-tamaru.github.io/camera-switch-threejs/)
+[Demo Link](https://shuya-tamaru.github.io/three-seamless-ortho-transition/)
 
 ## 3D Model
 
