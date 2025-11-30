@@ -13,7 +13,7 @@ export class ModelLoader {
     this.loader = new GLTFLoader();
     this.dracoLoader = new DRACOLoader();
 
-    this.dracoLoader.setDecoderPath("/draco/");
+    this.dracoLoader.setDecoderPath("./draco/");
     this.dracoLoader.setDecoderConfig({ type: "js" });
     this.loader.setDRACOLoader(this.dracoLoader);
   }

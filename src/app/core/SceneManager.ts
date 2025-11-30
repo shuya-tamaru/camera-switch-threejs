@@ -11,7 +11,7 @@ export class SceneManager {
   }
 
   private loadEnvironment() {
-    new HDRLoader().load("/hdr.hdr", (texture) => {
+    new HDRLoader().load("./hdr.hdr", (texture) => {
       texture.mapping = THREE.EquirectangularReflectionMapping;
       this.scene.environment = texture;
       this.scene.background = new THREE.Color("#fff");

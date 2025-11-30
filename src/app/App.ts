@@ -83,7 +83,7 @@ export class App {
     this.observerControlsManager.controls.update();
 
     this.modelLoader = new ModelLoader();
-    this.modelLoader.load("/model.glb").then((gltf) => {
+    this.modelLoader.load("./model.glb").then((gltf) => {
       this.sceneManager.scene.add(gltf.scene);
     });
   }
